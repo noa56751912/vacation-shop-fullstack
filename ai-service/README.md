@@ -48,10 +48,17 @@ source .venv/bin/activate
 ### 2. Install dependencies
 
 ```bash
-pip install fastapi uvicorn openai python-dotenv numpy pydantic qdrant-client
+pip install -r requirements.txt
 ```
 
 ### 3. Create `.env`
+
+```bash
+cp .env.example .env
+```
+
+Then fill in the keys. Without `OPENAI_API_KEY` the service still starts:
+the AI endpoints answer 503 and the rest of the store works.
 
 ```env
 OPENAI_API_KEY=sk-...your-key-here...

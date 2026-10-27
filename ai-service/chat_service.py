@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from openai import OpenAI, OpenAIError
 from dotenv import load_dotenv
-import base64, io, mimetypes, os, json, numpy as np
+import base64, io, logging, mimetypes, os, json, numpy as np
 from datetime import date
 from typing import Literal
 
@@ -18,7 +18,10 @@ load_dotenv()
 # immediately. .NET's POST /index can still refresh it later.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _build_index_from_file()
+    if os.getenv('OPENAI_API_KEY'):
+        _build_index_from_file()
+    else:
+        logging.warning('OPENAI_API_KEY is not set: AI endpoints answer 503 until it is.')
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -32,7 +35,19 @@ app.add_middleware(
     allow_methods=['POST'],
     allow_headers=['Content-Type'],
 )
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Created on first use, like vacation_engine.get_openai(), so the service
+# starts without a key and only the AI endpoints fail
+_openai_client: OpenAI | None = None
+
+def get_client() -> OpenAI:
+    global _openai_client
+    if _openai_client is None:
+        if not os.getenv('OPENAI_API_KEY'):
+            raise HTTPException(
+                status_code=503,
+                detail='OpenAI key not configured: set OPENAI_API_KEY in ai-service/.env')
+        _openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+    return _openai_client
 
 # ── EMBEDDING INDEX ──────────────────────────────────────────
 # Holds the product list + their embeddings in memory.
@@ -44,7 +59,7 @@ _PRODUCTS_FILE = os.path.join(os.path.dirname(__file__), 'products.json')
 
 def _embed(text: str) -> np.ndarray:
     """Get a single embedding vector from OpenAI."""
-    res = client.embeddings.create(
+    res = get_client().embeddings.create(
         model='text-embedding-3-small',
         input=text
     )
@@ -280,7 +295,7 @@ async def chat(req: ChatRequest):
         messages.append({'role': m.role, 'content': m.content})
     messages.append({'role': 'user', 'content': msg})
 
-    response = client.chat.completions.create(
+    response = get_client().chat.completions.create(
         model='gpt-4o',
         messages=messages,
         max_tokens=400,
@@ -394,7 +409,7 @@ def _parse_vacation_profile(source_text: str) -> VacationProfile:
     if not text:
         raise HTTPException(status_code=400, detail='source_text must not be empty.')
     try:
-        completion = client.beta.chat.completions.parse(
+        completion = get_client().beta.chat.completions.parse(
             model=_DV_MODEL,
             messages=[
                 {'role': 'system', 'content': _DV_SYSTEM_PROMPT},
@@ -438,7 +453,7 @@ async def dv_analyze_audio(
     audio_stream = io.BytesIO(file_bytes)
     audio_stream.name = file.filename
     try:
-        transcription = client.audio.transcriptions.create(
+        transcription = get_client().audio.transcriptions.create(
             model=_WHISPER_MODEL,
             file=audio_stream,
             response_format='text',
@@ -473,7 +488,7 @@ async def dv_analyze_image(
     encoded  = base64.b64encode(file_bytes).decode('utf-8')
     data_url = f'data:{mime};base64,{encoded}'
     try:
-        vision_resp = client.chat.completions.create(
+        vision_resp = get_client().chat.completions.create(
             model=_DV_MODEL,
             messages=[{
                 'role': 'user',
@@ -547,7 +562,7 @@ def _score_and_explain_matches(
         f'[{{"score": 0.95, "why": "Perfect warm beach resort with crystal-clear waters."}}, ...]'
     )
     try:
-        resp = client.chat.completions.create(
+        resp = get_client().chat.completions.create(
             model='gpt-4o',
             messages=[{'role': 'user', 'content': prompt}],
             max_tokens=400,
