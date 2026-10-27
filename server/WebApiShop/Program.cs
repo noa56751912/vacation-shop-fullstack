@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NLog.Web;
 using Repositories;
 using Services;
 
+using System.Security.Cryptography;
 using System.Text;
 using WebApiShop.MiddleWare;
 
@@ -62,7 +64,18 @@ builder.Services.AddCors(options =>
     });
 });
 
-var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
+// The signing key must not live in the repository: set Jwt:Key with
+// `dotnet user-secrets` locally, or the Jwt__Key environment variable on a server.
+string jwtKey = builder.Configuration["Jwt:Key"] ?? "";
+if (jwtKey.StartsWith("REPLACE") || jwtKey.Length < 32)
+{
+    if (!builder.Environment.IsDevelopment())
+        throw new InvalidOperationException("Jwt:Key is missing or a placeholder.");
+    // Development only: a random key per run, so the app starts without setup
+    jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+    builder.Configuration["Jwt:Key"] = jwtKey;
+}
+var key = Encoding.ASCII.GetBytes(jwtKey);
 
 // ����� ������ ������
 builder.Services.AddAuthentication(x =>
@@ -81,6 +94,12 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuer = false,
         ValidateAudience = false
     };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    // Every endpoint needs a signed-in user unless it says [AllowAnonymous]
+    options.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
 
 var app = builder.Build();
@@ -107,6 +126,8 @@ app.UseRating();
 app.UseStaticFiles();
 
 app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapControllers();
 

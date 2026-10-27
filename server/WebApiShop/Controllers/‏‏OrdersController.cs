@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services;
 using Entities;
 using AutoMapper;
@@ -33,6 +34,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<OrderDTO>>> GetAll()
         {
             var orders = await _ordersServices.GetAllOrders();
@@ -40,6 +42,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet("dashboard-stats")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<DashboardStatsDTO>> GetDashboardStats()
         {
             var stats = await _ordersServices.GetDashboardStats();

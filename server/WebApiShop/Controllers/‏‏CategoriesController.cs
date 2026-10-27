@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services;
 using Entities;
 using DTOs;
@@ -20,6 +21,7 @@ namespace WebApiShop.Controllers
 
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get()
         {
             IEnumerable<CategoryDTO> categories = await _ICategoriesServices.GetCategories();
@@ -29,6 +31,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<CategoryDTO>> GetById(int id)
         {
             var category = await _ICategoriesServices.GetCategoryById(id);
@@ -38,6 +41,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<CategoryDTO>> Post([FromBody] CategoryDTO categoryDto)
         {
             try
@@ -52,6 +56,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<CategoryDTO>> Put(int id, [FromBody] CategoryDTO categoryDto)
         {
             try
@@ -68,6 +73,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int id)
         {
             try

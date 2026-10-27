@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApiShop.Controllers
@@ -53,6 +54,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet("image")]
+        [AllowAnonymous]
         public IActionResult GetImage([FromQuery] string path)
         {
             try
@@ -101,6 +103,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet("list")]
+        [AllowAnonymous]
         public ActionResult<List<string>> GetProductImages([FromQuery] string categoryName, [FromQuery] string productName)
         {
             try
@@ -134,6 +137,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [RequestSizeLimit(104857600)] // 100 MB
         public async Task<ActionResult<string>> UploadImage(IFormFile file)
         {
@@ -171,6 +175,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPost("multiple")]
+        [Authorize(Roles = "Admin")]
         [RequestSizeLimit(104857600)] // 100 MB
         public async Task<ActionResult<List<string>>> UploadMultipleImages([FromForm] List<IFormFile> files, [FromForm] string categoryName, [FromForm] string productName)
         {
@@ -232,6 +237,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpDelete]
+        [Authorize(Roles = "Admin")]
         public ActionResult DeleteImage([FromQuery] string imagePath)
         {
             try

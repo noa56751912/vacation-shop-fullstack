@@ -1,6 +1,7 @@
 ﻿using DTOs;
 // שימי לב: הסרנו את using Entities ו-using Microsoft.EntityFrameworkCore
 // כי הקונטרולר לא אמור להכיר אותם בכלל!
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 
@@ -18,6 +19,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<PageResponseDTO<ProductDTO>>> Get(int position, int skip, [FromQuery] int?[] categoryIds, string? description, int? maxPrice, int? minPrice)
         {
             PageResponseDTO<ProductDTO> pageResponse = await _IProductsServices.GetProducts(position, skip, categoryIds, description, maxPrice, minPrice);
@@ -25,12 +27,14 @@ namespace WebApiShop.Controllers
         }
 
         [HttpGet("health")]
+        [AllowAnonymous]
         public IActionResult Health()
         {
             return Ok(new { status = "API is running", timestamp = DateTime.Now });
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<ProductDTO>> GetById(int id)
         {
             var product = await _IProductsServices.GetProductById(id);
@@ -42,6 +46,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [RequestSizeLimit(104857600)] // 100 MB
         public async Task<ActionResult<ProductDTO>> AddProduct([FromBody] ProductDTO productDTO)
         {
@@ -57,6 +62,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         [RequestSizeLimit(104857600)] // 100 MB
         public async Task<ActionResult<ProductDTO>> UpdateProduct(int id, [FromBody] ProductDTO productDTO)
         {
@@ -73,6 +79,7 @@ namespace WebApiShop.Controllers
 
         // 👇 פונקציית המחיקה המתוקנת
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             // הקונטרולר רק מעביר את הבקשה לסרוויס ומקבל תשובה (כן/לא)

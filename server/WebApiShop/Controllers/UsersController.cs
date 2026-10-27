@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services;
 using Entities;
 using DTOs;
@@ -18,6 +19,7 @@ namespace WebApiShop.Controllers
             _logger = logger;
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> Get()
         {
             IEnumerable<UserDTO> users = await _userServices.GetUsers();
@@ -36,6 +38,7 @@ namespace WebApiShop.Controllers
             return Ok(user);
         }
         [HttpPost("Login")]
+        [AllowAnonymous]
         public async Task<ActionResult<UserDTO>> Login([FromBody] ExistingUserDTO existingUser)
         {
 
@@ -48,6 +51,7 @@ namespace WebApiShop.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<UserDTO>> Register([FromBody] UserDTO user)
         {
             try

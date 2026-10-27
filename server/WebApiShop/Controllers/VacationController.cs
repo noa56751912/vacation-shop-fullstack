@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 // VacationController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -5,6 +6,7 @@ using Services;
 using DTOs;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class VacationController : ControllerBase
 {

@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services;
 
 namespace WebApiShop.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class PasswordController : ControllerBase

@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 // SearchController.cs
 using Microsoft.AspNetCore.Mvc;
 using Services;
 
 [ApiController]
+[AllowAnonymous]
 [Route("api/[controller]")]
 public class SearchController : ControllerBase
 {
