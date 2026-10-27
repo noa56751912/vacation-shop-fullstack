@@ -83,7 +83,7 @@ namespace TestProject
                 {
                     OrderId = 100,
                     OrderDate = DateOnly.FromDateTime(DateTime.Now),
-                    OrderSum = 250.5M
+                    OrderSum = 250
                 }
             }
         }
@@ -97,7 +97,7 @@ namespace TestProject
             Assert.Equal("login@test.com", result.Email);
           
             Assert.NotEmpty(result.Orders);
-            Assert.Equal(250.5M, result.Orders.First().OrderSum);
+            Assert.Equal(250, result.Orders.First().OrderSum);
         }
         [Fact]
         public async Task GetUserById_ShouldReturnUser_WhenIdExists()

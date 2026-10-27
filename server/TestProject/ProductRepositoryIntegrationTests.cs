@@ -37,10 +37,10 @@ namespace TestProject
             await _dbContext.SaveChangesAsync();
 
             
-            var prod1 = new Product { ProductName = "Cheap Radio", Price = 50, Description = "Small radio", CategoryId = catElec.CategoryId };
-            var prod2 = new Product { ProductName = "Expensive TV", Price = 2000, Description = "Big screen TV", CategoryId = catElec.CategoryId };
-            var prod3 = new Product { ProductName = "Gaming Mouse", Price = 100, Description = "Optical mouse", CategoryId = catElec.CategoryId };
-            var prod4 = new Product { ProductName = "Sofa", Price = 1500, Description = "Comfy sofa", CategoryId = catHome.CategoryId }; // קטגוריה אחרת
+            var prod1 = new Product { ProductName = "Cheap Radio", Price = 50, Description = "Small radio", CategoryId = catElec.CategoryId, IsActive = true };
+            var prod2 = new Product { ProductName = "Expensive TV", Price = 2000, Description = "Big screen TV", CategoryId = catElec.CategoryId, IsActive = true };
+            var prod3 = new Product { ProductName = "Gaming Mouse", Price = 100, Description = "Optical mouse", CategoryId = catElec.CategoryId, IsActive = true };
+            var prod4 = new Product { ProductName = "Sofa", Price = 1500, Description = "Comfy sofa", CategoryId = catHome.CategoryId, IsActive = true }; // קטגוריה אחרת
 
             await _dbContext.Products.AddRangeAsync(prod1, prod2, prod3, prod4);
             await _dbContext.SaveChangesAsync();
