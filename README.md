@@ -26,27 +26,35 @@ An online store for vacation packages with three parts: an Angular storefront an
 
 ## Run it
 
-Each part runs separately.
+Each part runs in its own terminal. The client talks to the API through a
+dev proxy, and the API talks to the AI service on port 8001.
 
 ```bash
-# AI service
+# 1. Database + API (needs the .NET 9 SDK and SQL Server; LocalDB works)
+cd server
+dotnet tool install --global dotnet-ef          # once
+dotnet ef database update --project Repositories --startup-project WebApiShop
+dotnet run --project WebApiShop --launch-profile http   # http://localhost:5000
+
+# 2. AI service (optional: without OPENAI_API_KEY it answers 503 and the store still works)
 cd ai-service
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install fastapi uvicorn openai python-dotenv numpy pydantic qdrant-client
-# create .env with your OpenAI and Qdrant settings (see ai-service/README.md)
-uvicorn chat_service:app
+pip install -r requirements.txt
+cp .env.example .env                                  # then fill in the keys
+python -m uvicorn chat_service:app --port 8001
 
-# API (needs the .NET 9 SDK and a SQL Server database)
-cd server
-dotnet restore
-dotnet ef database update --project Repositories
-dotnet run --project WebApiShop
-
-# Client
+# 3. Client
 cd client
 npm install
-npm start
+npm start                                             # http://localhost:4200
 ```
+
+The first `database update` creates the schema and seeds 4 categories and 20
+destinations with photos and seasonal prices. The connection string is in
+`server/WebApiShop/appsettings.json` (`ConnectionStrings:ApiShop`).
+
+Tests: `cd server && dotnet test` (they create and delete their own LocalDB
+database; set `TEST_DB_SERVER` to use another SQL Server).
 
 ## Configuration
 
