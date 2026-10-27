@@ -21,7 +21,7 @@ export class ImageUrlPipe implements PipeTransform {
 
     // If it's an old GUID-based path saved in server's wwwroot
     if (normalizedUrl.includes('images/products/')) {
-      return `https://localhost:44386/${normalizedUrl}`;
+      return `/${normalizedUrl}`;
     }
 
     // Product/category images are served by Angular from client/public/images

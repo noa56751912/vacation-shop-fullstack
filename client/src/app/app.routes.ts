@@ -1,37 +1,27 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
-import { ProductsPageComponent } from './component/products-page/products-page';
-import { Cart } from './component/cart/cart';
-import { SignIn } from './component/sign-in/sign-in';
-import { SignUp } from './component/sign-up/sign-up';
-import { UserProfile } from './component/user-profile/user-profile';
-import { AdminLayout } from './component/admin-layout/admin-layout';
-import { AdminDashboard } from './component/admin-dashboard/admin-dashboard';
-import { AdminProductList } from './component/admin-product-list/admin-product-list';
-import { AdminCategory } from './component/admin-category/admin-category';
-import { AdminOrders } from './component/admin-orders/admin-orders';
 import { adminGuard } from './guards/admin.guard';
-import { ThankYou } from './component/thank-you/thank-you';
-import { DreamVacationComponent } from './component/dream-vacation/dream-vacation.component';
 
+// Only the home page ships in the initial bundle; every other page is
+// downloaded the first time someone opens it.
 export const routes: Routes = [
   { path: '', component: Home },
-  { path: 'products', component: ProductsPageComponent },
-  { path: 'cart', component: Cart },
-  { path: 'sign-in', component: SignIn },
-  { path: 'sign-up', component: SignUp },
-  { path: 'user-profile', component: UserProfile },
-  { path: 'thank-you', component: ThankYou },
-  { path: 'dream-vacation', component: DreamVacationComponent },
+  { path: 'products', loadComponent: () => import('./component/products-page/products-page').then(m => m.ProductsPageComponent) },
+  { path: 'cart', loadComponent: () => import('./component/cart/cart').then(m => m.Cart) },
+  { path: 'sign-in', loadComponent: () => import('./component/sign-in/sign-in').then(m => m.SignIn) },
+  { path: 'sign-up', loadComponent: () => import('./component/sign-up/sign-up').then(m => m.SignUp) },
+  { path: 'user-profile', loadComponent: () => import('./component/user-profile/user-profile').then(m => m.UserProfile) },
+  { path: 'thank-you', loadComponent: () => import('./component/thank-you/thank-you').then(m => m.ThankYou) },
+  { path: 'dream-vacation', loadComponent: () => import('./component/dream-vacation/dream-vacation.component').then(m => m.DreamVacationComponent) },
   {
     path: 'admin',
-    component: AdminLayout,
+    loadComponent: () => import('./component/admin-layout/admin-layout').then(m => m.AdminLayout),
     canActivate: [adminGuard],
     children: [
-      { path: '', component: AdminDashboard },
-      { path: 'products', component: AdminProductList },
-      { path: 'categories', component: AdminCategory },
-      { path: 'orders', component: AdminOrders }
+      { path: '', loadComponent: () => import('./component/admin-dashboard/admin-dashboard').then(m => m.AdminDashboard) },
+      { path: 'products', loadComponent: () => import('./component/admin-product-list/admin-product-list').then(m => m.AdminProductList) },
+      { path: 'categories', loadComponent: () => import('./component/admin-category/admin-category').then(m => m.AdminCategory) },
+      { path: 'orders', loadComponent: () => import('./component/admin-orders/admin-orders').then(m => m.AdminOrders) }
     ]
   },
   { path: '**', redirectTo: '' }

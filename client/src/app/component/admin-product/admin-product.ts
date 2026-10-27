@@ -75,7 +75,7 @@ export class AdminProduct implements OnInit, OnChanges {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  private uploadUrl = 'https://localhost:44386/api/ImageUpload/multiple';
+  private uploadUrl = '/api/ImageUpload/multiple';
 
   constructor(
     private messageService: MessageService,
@@ -374,7 +374,7 @@ export class AdminProduct implements OnInit, OnChanges {
     
     
     if (url.includes('images/products/')) {
-      return `https://localhost:44386/${url}`;
+      return `/${url}`;
     }
     
    
