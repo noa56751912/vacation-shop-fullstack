@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services;
 using Entities;
 using DTOs;
+using WebApiShop.Extensions;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WebApiShop.Controllers
@@ -32,6 +33,8 @@ namespace WebApiShop.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> GetUserById(int id)
         {
+            if (!User.CanAccess(id))
+                return Forbid();
             UserDTO user = await _userServices.GetUserById(id);
             if (user == null)
                 return NotFound();
@@ -56,6 +59,8 @@ namespace WebApiShop.Controllers
         {
             try
             {
+                // Nobody signs up as an admin, whatever the body says
+                user = user with { IsAdmin = false };
                 UserDTO user1 = await _userServices.Register(user);
             if (user1 == null)
                 return BadRequest("Password");
@@ -73,6 +78,11 @@ namespace WebApiShop.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UserDTO updateUser)
         {
+            if (!User.CanAccess(id))
+                return Forbid();
+            // Only an admin may grant or remove admin rights
+            if (!User.IsInRole("Admin"))
+                updateUser = updateUser with { IsAdmin = false };
 
             bool success = await _userServices.Update(id, updateUser);
             if (!success)
@@ -85,6 +95,8 @@ namespace WebApiShop.Controllers
         {
             if (changePassword.UserId <= 0)
                 return BadRequest(new { message = "Invalid user id" });
+            if (!User.CanAccess(changePassword.UserId))
+                return Forbid();
 
             if (string.IsNullOrWhiteSpace(changePassword.CurrentPassword) || string.IsNullOrWhiteSpace(changePassword.NewPassword))
                 return BadRequest(new { message = "Current password and new password are required" });

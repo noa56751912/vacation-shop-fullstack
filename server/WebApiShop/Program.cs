@@ -11,7 +11,9 @@ using System.Text;
 using WebApiShop.MiddleWare;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// The mapping profile lives in this project; scanning every loaded assembly
+// breaks as soon as one of them has a type that cannot be loaded.
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserServices, UserServices>();  
 builder.Services.AddScoped<IPasswordServices, PasswordServices>();
@@ -132,5 +134,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Lets the integration tests start this app with WebApplicationFactory<Program>
+public partial class Program { }
 
 

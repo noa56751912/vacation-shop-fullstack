@@ -4,6 +4,7 @@ using Services;
 using Entities;
 using AutoMapper;
 using DTOs;
+using WebApiShop.Extensions;
 
 namespace WebApiShop.Controllers
 {
@@ -21,14 +22,18 @@ namespace WebApiShop.Controllers
         public async Task<ActionResult<OrderDTO>> Get(int id)
         {
             OrderDTO? order = await _ordersServices.GetOrderById(id);
-            if (order != null)
-                return Ok(order);
-            return NotFound();
+            if (order == null)
+                return NotFound();
+            if (!User.CanAccess(order.UserId))
+                return Forbid();
+            return Ok(order);
         }
 
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<List<OrderDTO>>> GetOrdersByUserId(int userId)
         {
+            if (!User.CanAccess(userId))
+                return Forbid();
             var orders = await _ordersServices.GetOrdersByUserId(userId);
             return Ok(orders);
         }
@@ -56,8 +61,8 @@ namespace WebApiShop.Controllers
 
             try
             {
-                if (newOrder.UserId <= 0)
-                    return BadRequest(new { message = "Valid userId is required" });
+                // The order always belongs to whoever is signed in, whatever the body says
+                newOrder = newOrder with { UserId = User.GetUserId() };
 
                 newOrder = await _ordersServices.AddOrder(newOrder);
 
