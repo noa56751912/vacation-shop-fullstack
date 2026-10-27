@@ -58,9 +58,9 @@ public class EmbeddingIndexService : IHostedService
                 };
             }).ToList();
 
-            var http = _factory.CreateClient();
+            var http = _factory.CreateClient("AiService");
             var res  = await http.PostAsJsonAsync(
-                "http://localhost:8001/index", productList, cancellationToken);
+                "index", productList, cancellationToken);
 
             if (res.IsSuccessStatusCode)
             {

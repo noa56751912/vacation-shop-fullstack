@@ -25,12 +25,15 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<OrderStatusUpdaterService>();
 builder.Services.AddHostedService<EmbeddingIndexService>();
 builder.Services.AddHttpClient();
-builder.Services.AddHttpClient<IVacationService, VacationService>(c =>
-    c.BaseAddress = new Uri("http://localhost:8001/"));
+// Every call to the Python AI service goes through this address, set in appsettings.json
+var aiServiceUrl = new Uri(builder.Configuration["AiService:BaseUrl"]!);
+builder.Services.AddHttpClient("AiService", c => c.BaseAddress = aiServiceUrl);
+builder.Services.AddHttpClient<IVacationService, VacationService>(c => c.BaseAddress = aiServiceUrl);
 
 builder.Host.UseNLog();
 
-builder.Services.AddDbContext<ApiShopContext>(option=>option.UseSqlServer ("Data Source=Yocheved;Initial Catalog=ApiShop;Integrated Security=True;Trust Server Certificate=True"));
+builder.Services.AddDbContext<ApiShopContext>(option =>
+    option.UseSqlServer(builder.Configuration.GetConnectionString("ApiShop")));
 // Add services to the container.
 
 builder.Services.AddControllers()

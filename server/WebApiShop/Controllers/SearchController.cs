@@ -11,7 +11,7 @@ public class SearchController : ControllerBase
 
     public SearchController(IHttpClientFactory factory, IProductsServices productService)
     {
-        _http           = factory.CreateClient();
+        _http           = factory.CreateClient("AiService");
         _productService = productService;
     }
 
@@ -44,7 +44,7 @@ public class SearchController : ControllerBase
         }).ToList() ?? new();
 
         var res = await _http.PostAsJsonAsync(
-            "http://localhost:8001/search",
+            "search",
             new { query = req.Query, products = productList, top_k = req.TopK });
 
         if (!res.IsSuccessStatusCode)

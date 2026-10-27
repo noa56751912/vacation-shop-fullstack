@@ -9,7 +9,7 @@ public class ChatController : ControllerBase
     private readonly HttpClient _http;
 
     public ChatController(IHttpClientFactory factory)
-        => _http = factory.CreateClient();
+        => _http = factory.CreateClient("AiService");
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] ChatRequest req)
@@ -22,8 +22,7 @@ public class ChatController : ControllerBase
             products = Array.Empty<object>()
         };
 
-        var res = await _http.PostAsJsonAsync(
-            "http://localhost:8001/chat", payload);
+        var res = await _http.PostAsJsonAsync("chat", payload);
 
         if (!res.IsSuccessStatusCode)
             return StatusCode(500, "AI service unavailable");
